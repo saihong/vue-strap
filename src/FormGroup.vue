@@ -26,6 +26,13 @@ export default {
       type: String,
       default: navigator.language
     },
+    labelWidth:{
+      type: String
+    },
+    inputWidth:{
+      type: String,
+      default:null      
+    }
     // readonly: {
     //   type: Boolean,
     //   coerce: coerce.boolean,
@@ -61,12 +68,24 @@ export default {
     validate () {
       let valid = true
       this.children.some(el => {
-        let v = el.validate ? el.validate() : el.valid !== undefined ? el.valid : el.required && !~['', null, undefined].indexOf(el.value)
+        let v = el.validate ? el.validate() : el.valid !== undefined ? el.valid : el.required && !~['', null, undefined].indexOf(el.value)        
         if (!v) valid = false
         return !valid
       })
       this.valid = valid
       return valid === true
+    },
+    renderChildAttr () {
+        let w = this.labelWidth, 
+            inputWidth = this.inputWidth 
+        this.$children.forEach(ele=>{
+          if (w && ele.labelWidth) {
+            ele.labelWidth = w
+          }
+          if (inputWidth && ele.width===null) {
+            ele.width = inputWidth
+          }
+        })
     }
   },
   created () {
@@ -79,7 +98,8 @@ export default {
     }
   },
   ready () {
-    this.validate()
+    this.renderChildAttr()
+    this.validate()    
   },
   beforeDestroy () {
     if (this._parent) this._parent.children.$remove(this)

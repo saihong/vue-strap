@@ -1,12 +1,11 @@
 <template>
-  <div class="datepicker">
-    <input class="form-control datepicker-input" :class="{'with-reset-button': clearButton}" type="text" :placeholder="placeholder"
-        :style="{width:width}"
-        @click="inputClick"
-        v-model="value"/>
-    <button v-if="clearButton && value" type="button" class="close" @click="value = ''">
-      <span>&times;</span>
-    </button>
+<div>  
+  <slot name="label"><label v-if="label" class="control-label {{labelWidth}}">{{label}}</label></slot>
+  <div class="datepicker validate {{inputWidth}}">    
+      <input class="form-control datepicker-input" :class="{'with-reset-button': clearButton}" type="text" :placeholder="placeholder" @click="inputClick" v-model="value" />
+      <button v-if="clearButton && value" type="button" class="close" @click="value = ''">
+        <span>&times;</span>
+      </button>
     <div class="datepicker-popup" v-show="displayDayView">
       <div class="datepicker-inner">
         <div class="datepicker-body">
@@ -34,11 +33,9 @@
           </div>
           <div class="datepicker-monthRange">
             <template v-for="m in text.months">
-              <span   :class="{'datepicker-dateRange-item-active':
+              <span :class="{'datepicker-dateRange-item-active':
                   (text.months[parse(value).getMonth()]  === m) &&
-                  currDate.getFullYear() === parse(value).getFullYear()}"
-                  @click="monthSelect($index)"
-                >{{m.substr(0,3)}}</span>
+                  currDate.getFullYear() === parse(value).getFullYear()}" @click="monthSelect($index)">{{m.substr(0,3)}}</span>
             </template>
           </div>
         </div>
@@ -55,14 +52,14 @@
           <div class="datepicker-monthRange decadeRange">
             <template v-for="decade in decadeRange">
               <span :class="{'datepicker-dateRange-item-active':
-                  parse(this.value).getFullYear() === decade.text}"
-                  @click.stop="yearSelect(decade.text)"
-                >{{decade.text}}</span>
+                  parse(this.value).getFullYear() === decade.text}" @click.stop="yearSelect(decade.text)">{{decade.text}}</span>
             </template>
           </div>
         </div>
       </div>
     </div>
+  </div>
+
   </div>
 </template>
 
@@ -85,13 +82,9 @@ export default {
         return []
       }
     },
-    width: {
-      type: String,
-      default: '200px'
-    },
     clearButton: {
       type: Boolean,
-      default: false
+      default: true
     },
     lang: {
       type: String,
@@ -99,11 +92,24 @@ export default {
     },
     placeholder: {
       type: String
+    },
+    labelWidth: {
+      type: String,
+      default:'col-md-2'
+    },
+    inputWidth: {
+      type: String,
+      default:'col-md-4'
+    },
+    label:{
+      type: String
     }
   },
   ready () {
     this._blur = (e) => {
-      if (!this.$el.contains(e.target)) this.close()
+      if (!this.$el.contains(e.target)) {
+        this.close()
+      } 
     }
     this.$dispatch('child-created', this)
     this.currDate = this.parse(this.value) || this.parse(new Date())
@@ -344,125 +350,147 @@ export default {
 </script>
 
 <style>
-.datepicker{
-  position: relative;
-  display: inline-block;
-}
-input.datepicker-input.with-reset-button {
-  padding-right: 25px;
-}
-.datepicker > button.close {
-  position: absolute;
-  top: 0;
-  right: 0;
-  outline: none;
-  z-index: 2;
-  display: block;
-  width: 34px;
-  height: 34px;
-  line-height: 34px;
-  text-align: center;
-}
-.datepicker > button.close:focus {
-  opacity: .2;
-}
-.datepicker-popup{
-  position: absolute;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background: #fff;
-  margin-top: 2px;
-  z-index: 1000;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.175);
-}
-.datepicker-inner{
-  width: 218px;
-}
-.datepicker-body{
-  padding: 10px 10px;
-}
-.datepicker-ctrl p,
-.datepicker-ctrl span,
-.datepicker-body span{
-  display: inline-block;
-  width: 28px;
-  line-height: 28px;
-  height: 28px;
-  border-radius: 4px;
-}
-.datepicker-ctrl p {
-  width: 65%;
-}
-.datepicker-ctrl span {
-  position: absolute;
-}
-.datepicker-body span {
-  text-align: center;
-}
-.datepicker-monthRange span{
-  width: 48px;
-  height: 50px;
-  line-height: 45px;
-}
-.datepicker-item-disable {
-  background-color: white!important;
-  cursor: not-allowed!important;
-}
-.decadeRange span:first-child,
-.decadeRange span:last-child,
-.datepicker-item-disable,
-.datepicker-item-gray{
-  color: #999;
-}
-
-.datepicker-dateRange-item-active:hover,
-.datepicker-dateRange-item-active {
-  background: rgb(50, 118, 177)!important;
-  color: white!important;
-}
-.datepicker-monthRange {
-  margin-top: 10px
-}
-.datepicker-monthRange span,
-.datepicker-ctrl span,
-.datepicker-ctrl p,
-.datepicker-dateRange span {
-  cursor: pointer;
-}
-.datepicker-monthRange span:hover,
-.datepicker-ctrl p:hover,
-.datepicker-ctrl i:hover,
-.datepicker-dateRange span:hover,
-.datepicker-dateRange-item-hover {
-  background-color : #eeeeee;
-}
-.datepicker-weekRange span{
-  font-weight: bold;
-}
-.datepicker-label{
-  background-color: #f8f8f8;
-  font-weight: 700;
-  padding: 7px 0;
-  text-align: center;
-}
-.datepicker-ctrl{
-  position: relative;
-  height: 30px;
-  line-height: 30px;
-  font-weight: bold;
-  text-align: center;
-}
-.month-btn{
-  font-weight: bold;
-  -webkit-user-select:none;
-  -moz-user-select:none;
-  -ms-user-select:none;
-  user-select:none;
-}
-.datepicker-preBtn{
-  left: 2px;
-}
-.datepicker-nextBtn{
-  right: 2px;
-}
+  .datepicker {
+    position: relative;
+    display: inline-block;
+  }
+  
+  input.datepicker-input.with-reset-button {
+    padding-right: 25px;
+  }
+  
+  .datepicker > button.close {
+    position: absolute;
+    top: 0;
+    right: .5em;
+    outline: none;
+    z-index: 2;
+    display: block;
+    width: 34px;
+    height: 34px;
+    line-height: 34px;
+    text-align: center;
+  }
+  
+  .datepicker > button.close:focus {
+    opacity: .2;
+  }
+  
+  .datepicker-popup {
+    position: absolute;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: #fff;
+    margin-top: 2px;
+    z-index: 1000;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+  }
+  
+  .datepicker-inner {
+    width: 218px;
+  }
+  
+  .datepicker-body {
+    padding: 10px 10px;
+  }
+  
+  .datepicker-ctrl p,
+  .datepicker-ctrl span,
+  .datepicker-body span {
+    display: inline-block;
+    width: 28px;
+    line-height: 28px;
+    height: 28px;
+    border-radius: 4px;
+  }
+  
+  .datepicker-ctrl p {
+    width: 65%;
+  }
+  
+  .datepicker-ctrl span {
+    position: absolute;
+  }
+  
+  .datepicker-body span {
+    text-align: center;
+  }
+  
+  .datepicker-monthRange span {
+    width: 48px;
+    height: 50px;
+    line-height: 45px;
+  }
+  
+  .datepicker-item-disable {
+    background-color: white!important;
+    cursor: not-allowed!important;
+  }
+  
+  .decadeRange span:first-child,
+  .decadeRange span:last-child,
+  .datepicker-item-disable,
+  .datepicker-item-gray {
+    color: #999;
+  }
+  
+  .datepicker-dateRange-item-active:hover,
+  .datepicker-dateRange-item-active {
+    background: rgb(50, 118, 177)!important;
+    color: white!important;
+  }
+  
+  .datepicker-monthRange {
+    margin-top: 10px
+  }
+  
+  .datepicker-monthRange span,
+  .datepicker-ctrl span,
+  .datepicker-ctrl p,
+  .datepicker-dateRange span {
+    cursor: pointer;
+  }
+  
+  .datepicker-monthRange span:hover,
+  .datepicker-ctrl p:hover,
+  .datepicker-ctrl i:hover,
+  .datepicker-dateRange span:hover,
+  .datepicker-dateRange-item-hover {
+    background-color: #eeeeee;
+  }
+  
+  .datepicker-weekRange span {
+    font-weight: bold;
+  }
+  
+  .datepicker-label {
+    background-color: #f8f8f8;
+    font-weight: 700;
+    padding: 7px 0;
+    text-align: center;
+  } 
+  
+  .datepicker-ctrl {
+    position: relative;
+    height: 30px;
+    line-height: 30px;
+    font-weight: bold;
+    text-align: center;
+  }
+  
+  .month-btn {
+    font-weight: bold;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  .datepicker-preBtn {
+    left: 2px;
+  }
+  
+  .datepicker-nextBtn {
+    right: 2px;
+  }
 </style>

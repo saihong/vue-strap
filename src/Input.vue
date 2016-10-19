@@ -1,57 +1,67 @@
 <template>
-  <div class="form-group" @click="focus()" :class="{validate:canValidate,'has-feedback':icon,'has-error':canValidate&&valid===false,'has-success':canValidate&&valid}">
-    <slot name="label"><label v-if="label" class="control-label">{{label}}</label></slot>
-    <textarea v-if="type=='textarea'" class="form-control" v-el:input v-model="value"
-      :cols="cols"
-      :rows="rows"
-      :name="name"
-      :title="attr(title)"
-      :readonly="readonly"
-      :required="required"
-      :disabled="disabled"
-      :maxlength="maxlength"
-      :placeholder="placeholder"
-      @blur="onblur" @focus="onfocus"
-    ></textarea>
-    <template v-else>
-      <div v-if="slots.before||slots.after" class="input-group">
-        <slot name="before"></slot>
-        <input class="form-control" v-el:input v-model="value"
+  <div @click="focus()" :class="{validate:canValidate,'has-feedback':icon,'has-error':canValidate&&valid===false,'has-success':canValidate&&valid, 'input-inline':inline}">
+    <slot name="label"><label v-if="label" class="control-label {{labelWidth}}">{{label}}
+      <span v-if="required" class="required-stars">&Star;</span>
+    </label>
+    
+    </slot>
+    <div :class="inlineClassDecider"> 
+      <textarea v-if="type=='textarea'" class="form-control" v-el:input v-model="value"
+        :cols="cols"
+        :rows="rows"
+        :name="name"
+        :title="attr(title)"
+        :readonly="readonly" 
+        :required="required"
+        :disabled="disabled"
+        :maxlength="maxlength"
+        :placeholder="placeholder"
+        :style="style"
+        @blur="onblur" @focus="onfocus"
+      ></textarea>
+      <template v-else>
+        <div v-if="slots.before||slots.after" class="input-group">
+          <slot name="before"></slot>
+          <input class="form-control" v-el:input v-model="value"
+            :name="name"
+            :max="attr(max)"
+            :min="attr(min)"
+            :step="step"
+            :type="type"
+            :title="attr(title)"
+            :readonly="readonly"
+            :required="required"
+            :disabled="disabled"
+            :maxlength="maxlength" 
+            :placeholder="placeholder"
+            :style="style"
+            @keyup.enter="enterSubmit&&submit()"
+            @blur="onblur" @focus="onfocus"
+          />
+          <slot name="after"></slot>
+        </div>      
+        <input v-else class="form-control" v-el:input v-model="value"
           :name="name"
           :max="attr(max)"
           :min="attr(min)"
-          :step="step"
           :type="type"
           :title="attr(title)"
           :readonly="readonly"
           :required="required"
           :disabled="disabled"
-          :maxlength="maxlength"
+          :maxlength="maxlength" 
           :placeholder="placeholder"
+          :style="style"
           @keyup.enter="enterSubmit&&submit()"
           @blur="onblur" @focus="onfocus"
         />
-        <slot name="after"></slot>
-      </div>
-      <input v-else class="form-control" v-el:input v-model="value"
-        :name="name"
-        :max="attr(max)"
-        :min="attr(min)"
-        :type="type"
-        :title="attr(title)"
-        :readonly="readonly"
-        :required="required"
-        :disabled="disabled"
-        :maxlength="maxlength"
-        :placeholder="placeholder"
-        @keyup.enter="enterSubmit&&submit()"
-        @blur="onblur" @focus="onfocus"
-      />
-    </template>
-    <span v-if="clearButton && value" class="close" @click="value = ''">&times;</span>
-    <span v-if="icon&&valid!==null" class="glyphicon glyphicon-{{valid?'ok':'remove'}} form-control-feedback" aria-hidden="true"></span>
-    <div v-if="showHelp" class="help-block">{{help}}</div>
-    <div v-if="showError" class="help-block with-errors">{{errorText}}</div>
+        </div>
+      </template>
+      <span v-if="clearButton && value" class="close" @click="value = ''">&times;</span>
+      <span v-if="icon&&valid!==null" class="glyphicon glyphicon-{{valid?'ok':'remove'}} form-control-feedback" aria-hidden="true"></span>
+      <div v-if="showHelp" class="help-block">{{help}}</div>
+      <div v-if="showError" class="help-block with-errors">{{errorText}}</div>
+    </div>
   </div>
 </template>
 
@@ -65,14 +75,14 @@ export default {
       twoWay: true,
       default: null
     },
-    match: {
+    match: { 
       type: String,
       default: null
     },
     clearButton: {
       type: Boolean,
       coerce: coerce.boolean,
-      default: false
+      default: true
     },
     disabled: {
       type: Boolean,
@@ -108,7 +118,7 @@ export default {
     },
     lang: {
       type: String,
-      default: navigator.language
+      default: navigator.language 
     },
     mask: null,
     maskDelay: {
@@ -158,6 +168,11 @@ export default {
       coerce: coerce.boolean,
       default: false
     },
+    inline: {
+      type: Boolean,
+      coerce: coerce.boolean,
+      default: false
+    },
     rows: {
       type: Number,
       coerce: coerce.number,
@@ -176,6 +191,18 @@ export default {
       type: Number,
       coerce: coerce.number,
       default: 250
+    },
+    labelWidth:{
+      type: String,
+      default:'col-md-2'
+    },
+    inputWidth:{
+      type: String,
+      default:'col-md-4'
+    },
+    style:{
+      type:String,
+      default:null
     }
   },
   data () {
@@ -212,6 +239,9 @@ export default {
     },
     title () {
       return this.errorText || this.help || ''
+    },
+    inlineClassDecider () {
+      return this.inline?"":this.inputWidth ;
     }
   },
   watch: {
@@ -314,7 +344,7 @@ label~.close {
 .close {
   position: absolute;
   top: 0;
-  right: 0;
+  right: .5em;
   z-index: 2;
   display: block;
   width: 34px;
@@ -325,4 +355,14 @@ label~.close {
 .has-feedback .close {
   right:18px;
 }
+.required-stars {
+  position: absolute;
+  top: 0;
+  right: 0em;
+  color: red
+}
+div.input-inline {
+  display: inline-block;
+}
+
 </style>

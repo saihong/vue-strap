@@ -1,45 +1,51 @@
 <template>
-<div v-el:select :class="{'btn-group btn-group-justified': justified, 'btn-select': !justified}">
-  <slot name="before"></slot>
-  <div :class="{open:show,dropdown:!justified}">
-    <select v-el:sel v-model="value" v-show="show" name="{{name}}" class="secret" :multiple="multiple" :required="required" :readonly="readonly" :disabled="disabled">
-      <option v-if="required" value=""></option>
-      <option v-for="option in options" :value="option[optionsValue]||option">{{ option[optionsLabel]||option }}</option>
-    </select>
-    <button type="button" class="form-control dropdown-toggle"
-      :disabled="disabled || !hasParent"
-      :readonly="readonly"
-      @click="toggle()"
-      @keyup.esc="show = false"
-    >
-      <span class="btn-content">{{ loading ? text.loading : showPlaceholder || selectedItems }}</span>
-      <span class="caret"></span>
-      <span v-if="clearButton&&values.length" class="close" @click="clear()">&times;</span>
-    </button>
-    <ul class="dropdown-menu">
-      <template v-if="options.length">
-        <li v-if="canSearch" class="bs-searchbox">
-          <input type="text" placeholder="{{searchText||text.search}}" class="form-control" autocomplete="off"
-            v-el:search
-            v-model="searchValue"
-            @keyup.esc="show = false"
-          />
-          <span v-show="searchValue" class="close" @click="clearSearch">&times;</span>
-        </li>
-        <li v-if="required&&!clearButton"><a @mousedown.prevent="clear() && blur()">{{ placeholder || text.notSelected }}</a></li>
-        <li v-for="option in options | filterBy searchValue" :id="option[optionsValue]||option">
-          <a @mousedown.prevent="select(option[optionsValue],option)">
-            <span v-html="option[optionsLabel]||option"></span>
-            <span class="glyphicon glyphicon-ok check-mark" v-show="isSelected(option[optionsValue]||option)"></span>
-          </a>
-        </li>
-      </template>
-      <slot></slot>
-      <div v-if="showNotify && !closeOnSelect" class="notify in" transition="fadein">{{limitText}}</div>
-    </ul>
-    <div v-if="showNotify && closeOnSelect" class="notify out" transition="fadein"><div>{{limitText}}</div></div>
-  </div>
-  <slot name="after"></slot>
+<div :class="{'input-inline': inline}">
+  <slot name="label"><label v-if="label" class="control-label {{labelWidth}}">{{label}}</label></slot>
+  <div :class="inlineClassDecider">
+    <div v-el:select :class="{'btn-group btn-group-justified': justified, 'btn-select': !justified}">
+      <slot name="before"></slot>
+      <div :class="{open:show,dropdown:!justified}">
+        <select v-el:sel v-model="value" v-show="show" name="{{name}}" class="secret" :multiple="multiple" :required="required" :readonly="readonly" :disabled="disabled">
+          <option v-if="required" value=""></option>
+          <option v-for="option in options" :value="option[optionsValue]||option">{{ option[optionsLabel]||option }}</option>
+        </select>
+        <button type="button" class="form-control dropdown-toggle"
+          style="text-align:left;width:{{width}}"          
+          :disabled="disabled || !hasParent"
+          :readonly="readonly"
+          @click="toggle()"
+          @keyup.esc="show = false"
+        >
+          <span class="btn-content">{{ loading ? text.loading : showPlaceholder || selectedItems }}</span>
+          <span class="caret"></span>
+          <span v-if="clearButton&&values.length" class="close" @click="clear()">&times;</span>
+        </button>
+        <ul class="dropdown-menu">
+          <template v-if="options.length"> 
+            <li v-if="canSearch" class="bs-searchbox">
+              <input type="text" placeholder="{{searchText||text.search}}" class="form-control" autocomplete="off"
+                v-el:search
+                v-model="searchValue"
+                @keyup.esc="show = false"
+              />
+              <span v-show="searchValue" class="close" @click="clearSearch">&times;</span>
+            </li>
+            <li v-if="required&&!clearButton"><a @mousedown.prevent="clear() && blur()">{{ placeholder || text.notSelected }}</a></li>
+            <li v-for="option in options | filterBy searchValue" :id="option[optionsValue]||option">
+              <a @mousedown.prevent="select(option[optionsValue],option)">
+                <span v-html="option[optionsLabel]||option"></span>
+                <span class="glyphicon glyphicon-ok check-mark" v-show="isSelected(option[optionsValue]||option)"></span>
+              </a>
+            </li>
+          </template>
+          <slot></slot>
+          <div v-if="showNotify && !closeOnSelect" class="notify in" transition="fadein">{{limitText}}</div>
+        </ul>
+        <div v-if="showNotify && closeOnSelect" class="notify out" transition="fadein"><div>{{limitText}}</div></div>
+      </div>
+      <slot name="after"></slot>
+    </div>
+  </div>  
 </div>
 </template>
 
@@ -80,7 +86,7 @@ export default {
     justified: {
       type: Boolean,
       coerce: coerce.boolean,
-      default: false
+      default: true
     },
     lang: {
       type: String,
@@ -115,6 +121,11 @@ export default {
       coerce: coerce.boolean,
       default: null
     },
+    inline: {
+      type: Boolean,
+      coerce: coerce.boolean,
+      default: false
+    },
     required: {
       type: Boolean,
       coerce: coerce.boolean,
@@ -137,6 +148,20 @@ export default {
     url: {
       type: String,
       default: null
+    },
+    label:{
+      type: String
+    },
+    width:{
+      type: String
+    },
+    labelWidth:{
+      type: String,
+      default: 'col-md-2'
+    },
+    inputWidth:{
+      type: String,
+      default: 'col-md-4'
     }
   },
   data () {
@@ -182,6 +207,9 @@ export default {
     },
     values () {
       return this.value instanceof Array ? this.value : this.value !== null && this.value !== undefined ? [this.value] : []
+    },
+    inlineClassDecider () {
+      return this.inline?"input-inline":this.inputWidth ;
     }
   },
   watch: {
@@ -306,6 +334,10 @@ export default {
       parent.children.push(this)
       this._parent = parent
     }
+    // if inline=true, switch off the justified
+    if (this.inline) {
+      this.justified=false
+    }
   },
   ready () {
     $(this.$els.select).onBlur(e => { this.show = false })
@@ -381,4 +413,8 @@ span.caret {
   -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
 }
+div.input-inline {
+  display: inline-block;
+}
+
 </style>
