@@ -15,11 +15,11 @@
       </navbar>
       <div class="form-group">
         <label>Placement</label>
-        <v-select :value.sync="placement" clear-button :options="['top','bottom','static']"></v-select>
+        <v-select v-model="placement" clear-button :options="['top','bottom','static']"></v-select>
       </div>
       <div class="form-group">
         <label>Type</label>
-        <v-select :value.sync="type" :options="['default','inverse']"></v-select>
+        <v-select v-model="type" :options="['default','inverse']"></v-select>
       </div>
     </div>
     <doc-code language="markup">
@@ -61,13 +61,13 @@
 </template>
 
 <script>
-import docSection from './docSection.vue'
-import docTable from './docTable.vue'
-import docCode from './docCode.vue'
+import docSection from './utils/docSection.vue'
+import docTable from './utils/docTable.vue'
+import docCode from './utils/docCode.vue'
 import dropdown from 'src/Dropdown.vue'
 import navbar from 'src/Navbar.vue'
 import tooltip from 'src/Tooltip.vue'
-import vSelect from 'src/Select.vue'
+import vSelect from 'src/components/Select.vue'
 
 export default {
   components: {

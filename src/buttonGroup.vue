@@ -5,28 +5,29 @@
 </template>
 
 <script>
-import {coerce} from './utils/utils.js'
+// let coerce = {
+//   buttons: 'boolean',
+//   justified: 'boolean',
+//   vertical: 'boolean'
+// }
 
 export default {
   props: {
-    value: null,
     buttons: {
       type: Boolean,
-      coerce: coerce.boolean,
       default: true
     },
     justified: {
       type: Boolean,
-      coerce: coerce.boolean,
       default: false
     },
     type: {
       type: String,
       default: 'default'
     },
+    value: null,
     vertical: {
       type: Boolean,
-      coerce: coerce.boolean,
       default: false
     }
   },
@@ -34,8 +35,9 @@ export default {
     value: {
       deep: true,
       handler (val) {
-        this.$children.forEach((el) => {
-          if (el.group && el.eval) el.eval()
+        this.$emit('input', val)
+        this.$children.forEach(el => {
+          if (el._inGroup && el.eval) el.eval()
         })
       }
     }

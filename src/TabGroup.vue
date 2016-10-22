@@ -1,18 +1,14 @@
-<template><slot></slot></template>
+<template><span><slot></slot></span></template>
 
 <script>
-import {coerce} from './utils/utils.js'
+// let coerce = {
+//   disabled: 'boolean'
+// }
 
 export default {
   props: {
-    disabled: {
-      type: Boolean,
-      coerce: coerce.boolean,
-      default: false
-    },
-    header: {
-      type: String
-    }
+    disabled: {type: Boolean, default: false},
+    header: {type: String}
   },
   data () {
     return {
@@ -21,9 +17,11 @@ export default {
     }
   },
   computed: {
-    active () {
-      return ~this.tabs.indexOf(this._tabset.show)
-    }
+    active () { return ~this.tabs.indexOf(this._tabset.show) }
+  },
+  methods: {
+    blur () { this.show = false },
+    toggle () { this.show = !this.show }
   },
   created () {
     this._tabgroup = true
@@ -40,14 +38,6 @@ export default {
       console.warn('Warning: tabgroup depend on tabset to work properly.')
     } else {
       this._tabset = tabset
-    }
-  },
-  methods: {
-    blur () {
-      this.show = false
-    },
-    toggle () {
-      this.show = !this.show
     }
   }
 }
