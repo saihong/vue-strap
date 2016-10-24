@@ -1,5 +1,5 @@
 <template>
-  <affix offset="50">
+  <affix :offset="50">
     <ul class="nav bs-docs-sidenav" id="sidenav">
       <li v-for="s in sections" :class="{active:active==s.id}"><a :href="'#' + s.id">{{ s.name }}</a></li>
     </ul>
@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import $ from 'src/utils/NodeList.js'
+import $ from 'src/components/utils/NodeList.js'
 import affix from 'src/Affix.vue'
 
 export default {
