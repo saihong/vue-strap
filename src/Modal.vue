@@ -1,28 +1,31 @@
 <template>
-  <div role="dialog" :class="['modal',effect]">
-    <div :class="{'modal-dialog':true,'modal-lg':large,'modal-sm':small}" role="document" :style="{width: optionalWidth}">
-      <div class="modal-content">
-        <slot name="modal-header">
-          <div class="modal-header">
-            <button type="button" class="close" @click="close"><span>&times;</span></button>
-            <h4 class="modal-title"><slot name="title">{{title}}</slot></h4>
+  <transition name="modal" v-on:after-leave='after_leave'>
+    <div v-if="show" role="dialog" class='modal in' style="display: block" @click="check_backdrop">
+      <div class="modal-dialog" :class="{'modal-lg':large,'modal-sm':small}" role="document" :style="{width: optionalWidth}">
+        <div class="modal-content" ref="content">
+          <slot name="modal-header">
+            <div class="modal-header">
+              <button type="button" class="close" @click="close"><span>&times;</span></button>
+              <h4 class="modal-title"><slot name="title">{{ title }}</slot></h4>
+            </div>
+          </slot>
+          <div class="modal-body">
+            <slot/>
           </div>
-        </slot>
-        <slot name="modal-body"><div class="modal-body"></div></slot>
-        <slot name="modal-footer">
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" @click="cancel">{{ cancelText }}</button>
-            <button type="button" class="btn btn-primary" @click="ok">{{ okText }}</button>
-          </div>
-        </slot>
+          <slot name="modal-footer">
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" @click="cancel">{{ cancelText }}</button>
+              <button type="button" class="btn btn-primary" @click="ok">{{ okText }}</button>
+            </div>
+          </slot>
+        </div>
       </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script>
 import {getScrollBarWidth} from './utils/utils.js'
-import $ from './utils/NodeList.js'
 // let coerce = {
 //   backdrop: 'boolean',
 //   large: 'boolean',
@@ -33,15 +36,15 @@ import $ from './utils/NodeList.js'
 export default {
   props: {
     backdrop: {type: Boolean, default: true},
-    callback: {type: Function, default: null},
+    callback: {type: Function, default: null}, // called on ok
     cancelText: {type: String, default: 'Close'},
     effect: {type: String, default: null},
     large: {type: Boolean, default: false},
     okText: {type: String, default: 'Save changes'},
     small: {type: Boolean, default: false},
     title: {type: String, default: ''},
-    value: {type: Boolean, required: true},
-    width: {default: null}
+    width: {default: null},
+    show: {type: Boolean, required: false}
   },
   computed: {
     optionalWidth () {
@@ -54,42 +57,42 @@ export default {
     }
   },
   watch: {
-    value (val) {
-      this.$emit('input', val)
-      const el = this.$el
+    show (val) {
+      this.$emit('show', val)
       const body = document.body
       const scrollBarWidth = getScrollBarWidth()
       if (val) {
-        $(el).find('.modal-content').focus()
-        el.style.display = 'block'
-        setTimeout(() => $(el).addClass('in'), 0)
-        $(body).addClass('modal-open')
+        body.classList.add('modal-open')
         if (scrollBarWidth !== 0) {
           body.style.paddingRight = scrollBarWidth + 'px'
         }
-        if (this.backdrop) {
-          $(el).on('click', e => {
-            if (e.target === el) this.value = false
-          })
-        }
-      } else {
-        body.style.paddingRight = null
-        $(body).removeClass('modal-open')
-        $(el).removeClass('in').on('transitionend', () => {
-          $(el).off('click transitionend')
-          el.style.display = 'none'
-        })
       }
     }
   },
   methods: {
+    after_leave() {
+        const body = document.body
+      
+        body.style.paddingRight = null
+        body.classList.remove('modal-open')
+    },
+    check_backdrop( e ) {
+      if( this.backdrop ) {
+        if (e.target === this.$el) 
+            this.$emit( 'cancel' )
+      }
+    },
     cancel () {
-      this.value = false
       this.$emit('cancel')
     },
     ok () {
-      if (this.callback instanceof Function) this.callback()
+      if (this.callback instanceof Function) 
+        this.callback()
+
       this.$emit('ok')
+    },
+    close() { 
+      this.$emit( 'cancel' )
     }
   }
 }
